@@ -2,11 +2,9 @@ package co.edu.uniquindio.demoapp.features.login
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -30,9 +28,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.uniquindio.demoapp.core.util.RequestResult
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Icon
 
 @Composable
 fun LoginScreen(
@@ -127,11 +122,6 @@ fun LoginScreen(
                     if (state.loginResult is RequestResult.Loading) {
                         Text(text = "Iniciando sesión...")
                     } else {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Icono de login"
-                        )
-                        Spacer(modifier = Modifier.width(width = 5.dp))
                         Text(text = "Iniciar Sesión")
                     }
                 }

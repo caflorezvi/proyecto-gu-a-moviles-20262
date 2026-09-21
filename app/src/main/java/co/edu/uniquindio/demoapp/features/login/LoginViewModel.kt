@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
-// Todo el estado de la pantalla en un solo objeto inmutable
 data class LoginUiState(
     val email: String = "",
     val password: String = "",
@@ -20,7 +19,6 @@ data class LoginUiState(
     val passwordError: String? = null,
     val loginResult: RequestResult? = null // Estado del intento de login
 ) {
-    // Propiedad calculada: la pantalla no tiene que repetir esta lógica
     val isFormValid: Boolean
         get() = email.isNotBlank() &&
                 password.isNotBlank() &&
@@ -69,6 +67,7 @@ class LoginViewModel : ViewModel() {
         return when {
             password.isBlank() -> "La contraseña es obligatoria"
             password.length < 6 -> "La contraseña debe tener al menos 6 caracteres"
+            password.length > 15 -> "La contraseña debe tener como máximo 15 caracteres"
             else -> null
         }
     }
@@ -84,7 +83,7 @@ class LoginViewModel : ViewModel() {
             // La solicitud pasa al estado de carga
             _uiState.update { it.copy(loginResult = RequestResult.Loading) }
 
-            delay(1500.milliseconds) // Simula el tiempo que tardaría una consulta real
+            delay(1500) // Simula el tiempo que tardaría una consulta real
 
             val state = _uiState.value
             val result = if (state.email == "carlos@email.com" && state.password == "123456") {

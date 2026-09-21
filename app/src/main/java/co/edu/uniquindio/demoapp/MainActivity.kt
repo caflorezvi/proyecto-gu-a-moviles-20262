@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import co.edu.uniquindio.demoapp.features.home.HomeScreen
 import co.edu.uniquindio.demoapp.core.theme.DemoAppTheme
 import co.edu.uniquindio.demoapp.features.login.LoginScreen
+import co.edu.uniquindio.demoapp.features.register.RegisterScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,7 +31,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             DemoAppTheme {
                 //Imaginemos que capturamos la ciudad del usuario
-                LoginScreen()
+                HomeScreen()
             }
         }
     }
