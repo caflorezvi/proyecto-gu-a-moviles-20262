@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             DemoAppTheme {
                 //Imaginemos que capturamos la ciudad del usuario
-                HomeScreen()
+                RegisterScreen()
             }
         }
     }

@@ -2,6 +2,7 @@ package co.edu.uniquindio.demoapp.features.register
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -9,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Face4
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
@@ -33,6 +35,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import co.edu.uniquindio.demoapp.core.component.ConfirmAlertDialog
 import co.edu.uniquindio.demoapp.core.component.DropdownMenu
 import co.edu.uniquindio.demoapp.core.util.RequestResult
 
@@ -151,20 +154,32 @@ fun RegisterScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
-                onClick = { viewModel.register() },
+                onClick = viewModel::onRegisterClick,
                 enabled = state.isFormValid && state.registrationResult !is RequestResult.Loading,
                 content = {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Icono del boton de registro"
+                    )
+                    Spacer(
+                        modifier = Modifier.padding(horizontal = 5.dp)
+                    )
                     if (state.registrationResult is RequestResult.Loading) {
                         Text(text = "Registrando...")
                     } else {
-                        Icon(
-                            imageVector = Icons.Default.Face4,
-                            contentDescription = "Icono del boton de registro"
-                        )
                         Text(text = "Registrarse")
                     }
                 }
             )
         }
+    }
+
+    if (state.showConfirmDialog) {
+        ConfirmAlertDialog(
+            title = "¿Está seguro de enviar los datos?",
+            message = "Está a punto de crear una cuenta con el email ${state.email}.",
+            onConfirm = viewModel::onConfirmRegister,
+            onDismiss = viewModel::onDismissConfirmDialog
+        )
     }
 }

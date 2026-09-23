@@ -25,6 +25,7 @@ data class RegisterUiState(
     val emailError: String? = null,
     val passwordError: String? = null,
     val confirmPasswordError: String? = null,
+    val showConfirmDialog: Boolean = false,
     val registrationResult: RequestResult? = null
 ) {
     val isFormValid: Boolean
@@ -129,6 +130,24 @@ class RegisterViewModel : ViewModel() {
 
     fun resetForm() {
         _uiState.value = RegisterUiState()
+    }
+
+    // El usuario presionó el botón de registro
+    fun onRegisterClick() {
+        // Si el formulario no es válido, no se muestra el diálogo
+        if (!_uiState.value.isFormValid) return
+        _uiState.update { it.copy(showConfirmDialog = true) }
+    }
+
+    // El usuario confirmó en el diálogo
+    fun onConfirmRegister() {
+        _uiState.update { it.copy(showConfirmDialog = false) }
+        register() // Función creada en la actividad práctica de la guía anterior
+    }
+
+    // El usuario canceló o cerró el diálogo
+    fun onDismissConfirmDialog() {
+        _uiState.update { it.copy(showConfirmDialog = false) }
     }
 
     fun register() {
