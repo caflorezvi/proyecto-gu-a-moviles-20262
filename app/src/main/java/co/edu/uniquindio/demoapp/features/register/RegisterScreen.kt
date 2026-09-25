@@ -1,5 +1,6 @@
 package co.edu.uniquindio.demoapp.features.register
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -41,11 +42,18 @@ import co.edu.uniquindio.demoapp.core.util.RequestResult
 
 @Composable
 fun RegisterScreen(
-    viewModel: RegisterViewModel = viewModel()
+    viewModel: RegisterViewModel = viewModel(),
+    onNavigateToBack: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
+
+    BackHandler(
+        enabled = !state.showExitDialog
+    ){
+        viewModel.onExitClick()
+    }
 
     LaunchedEffect(state.registrationResult) {
         when (val result = state.registrationResult) {
@@ -172,6 +180,18 @@ fun RegisterScreen(
                 }
             )
         }
+    }
+
+    if (state.showExitDialog) {
+        ConfirmAlertDialog(
+            title = "¿Está seguro de salir?",
+            message = "Si sale ahora, se perderán los datos que ha ingresado.",
+            onConfirm = {
+                viewModel.resetForm()
+                onNavigateToBack()
+            },
+            onDismiss = viewModel::onDismissExitDialog
+        )
     }
 
     if (state.showConfirmDialog) {

@@ -20,7 +20,10 @@ import coil3.request.crossfade
 import coil3.request.error
 
 @Composable
-fun HomeScreen(){
+fun HomeScreen(
+    onNavigateToLogin: () -> Unit,
+    onNavigateToRegister: () -> Unit
+){
     Column(
         modifier = Modifier.fillMaxSize(), // Ocupa todo el espacio disponible
         verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically), // Espacio entre elementos y centrado vertical
@@ -43,14 +46,14 @@ fun HomeScreen(){
         ) {
             Button(
                 onClick = {
-                    // Acción al hacer clic en el botón de inicio de sesión
+                    onNavigateToLogin()
                 }
             ) {
                 Text(text = "Iniciar sesión")
             }
             Button(
                 onClick = {
-                    // Acción al hacer clic en el botón de registro
+                    onNavigateToRegister()
                 }
             ) {
                 Text(text = "Crear una cuenta")

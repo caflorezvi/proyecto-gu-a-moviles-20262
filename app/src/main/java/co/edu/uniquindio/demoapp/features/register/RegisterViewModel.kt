@@ -26,6 +26,7 @@ data class RegisterUiState(
     val passwordError: String? = null,
     val confirmPasswordError: String? = null,
     val showConfirmDialog: Boolean = false,
+    var showExitDialog: Boolean = false,
     val registrationResult: RequestResult? = null
 ) {
     val isFormValid: Boolean
@@ -148,6 +149,14 @@ class RegisterViewModel : ViewModel() {
     // El usuario canceló o cerró el diálogo
     fun onDismissConfirmDialog() {
         _uiState.update { it.copy(showConfirmDialog = false) }
+    }
+
+    fun onDismissExitDialog() {
+        _uiState.update { it.copy(showExitDialog = false) }
+    }
+
+    fun onExitClick() {
+        _uiState.update { it.copy(showExitDialog = true) }
     }
 
     fun register() {

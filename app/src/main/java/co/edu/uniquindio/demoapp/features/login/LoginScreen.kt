@@ -35,6 +35,7 @@ import co.edu.uniquindio.demoapp.core.util.RequestResult
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
+    onNavigateToReports: () -> Unit,
     viewModel: LoginViewModel = viewModel()
 ) {
 
@@ -51,6 +52,7 @@ fun LoginScreen(
                 // showSnackbar suspende mientras el mensaje está visible en pantalla
                 snackbarHostState.showSnackbar(result.message)
                 viewModel.resetLoginResult() // Limpiar para que el mensaje no se repita
+                onNavigateToReports()
             }
 
             is RequestResult.Failure -> {
