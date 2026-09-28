@@ -1,10 +1,12 @@
 package co.edu.uniquindio.demoapp.features.report.list
 
-
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,7 +29,10 @@ import co.edu.uniquindio.demoapp.domain.model.Report
 
 @Composable
 fun ReportListScreen(
-    onNavigateToDetail: (String) -> Unit, //id del reporte
+    onNavigateToReportDetail: (String) -> Unit, // Función para navegar al detalle del reporte (recibe el ID del reporte)
+    // Espaciado que más adelante recibirá del Scaffold (barras superior/inferior).
+    // Mientras tanto, por defecto se usa el espacio de las barras del sistema para no quedar debajo de ellas.
+    padding: PaddingValues = WindowInsets.systemBars.asPaddingValues(),
     reportsViewModel: ReportListViewModel = viewModel()
 ){
     // Obtener la lista de reportes desde el ViewModel
@@ -37,13 +42,14 @@ fun ReportListScreen(
     // LazyColumn solo renderiza los elementos visibles en pantalla, mejorando el rendimiento, además integra scrolling automáticamente.
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 60.dp),
+        // contentPadding aplica el espaciado sin recortar el scroll de la lista
+        contentPadding = padding
     ) {
-        // Iterar sobre la lista de reportes y crear un ItemReport para cada uno
+        // Iterar sobre la lista de reportes y crear un ReportItem para cada uno
         items(reports) { report ->
             ReportItem(
                 report = report,
-                onNavigateToDetail = onNavigateToDetail
+                onNavigateToReportDetail = onNavigateToReportDetail
             )
         }
     }
@@ -52,19 +58,20 @@ fun ReportListScreen(
 @Composable
 fun ReportItem(
     report: Report,
-    onNavigateToDetail: (String) -> Unit
+    onNavigateToReportDetail: (String) -> Unit // Función para navegar al detalle del reporte (recibe el ID del reporte)
 ){
     ListItem(
         modifier = Modifier
             .clip(MaterialTheme.shapes.small)
             .clickable {
-                onNavigateToDetail(report.id)
+                // Se avisa el ID del reporte seleccionado; la navegación se resuelve en AppNavigation
+                onNavigateToReportDetail(report.id)
             },
         headlineContent = {
             Text(text = report.title)
         },
         supportingContent = {
-            // Mostrar el estado del reporte como contenido secundario (puede ajustarse según se desee)
+            // Mostrar la descripción del reporte como contenido secundario (puede ajustarse según se desee)
             Text(text = report.description)
         },
         leadingContent = {

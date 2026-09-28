@@ -7,14 +7,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Face4
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,31 +41,32 @@ import co.edu.uniquindio.demoapp.core.util.RequestResult
 
 @Composable
 fun RegisterScreen(
-    viewModel: RegisterViewModel = viewModel(),
-    onNavigateToBack: () -> Unit
+    onNavigateToBack: () -> Unit, // Función para navegar hacia atrás
+    viewModel: RegisterViewModel = viewModel()
 ) {
+    // Estado para gestionar los snackbars
     val snackbarHostState = remember { SnackbarHostState() }
+    // Se observa el estado completo de la pantalla
     val state by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
 
-    BackHandler(
-        enabled = !state.showExitDialog
-    ){
-        viewModel.onExitClick()
+    // Intercepta el botón "atrás" mientras el diálogo de salida no esté visible
+    BackHandler(enabled = !state.showExitDialog) {
+        viewModel.onBackClick()
     }
 
-    LaunchedEffect(state.registrationResult) {
-        when (val result = state.registrationResult) {
+    // Efecto para mostrar el snackbar cuando hay resultado
+    LaunchedEffect(state.registerResult) {
+        when (val result = state.registerResult) {
             is RequestResult.Success -> {
                 snackbarHostState.showSnackbar(result.message)
-                viewModel.resetRegistrationResult()
-                // Opcional: navegar a login o limpiar el formulario
-                // viewModel.resetForm()
+                viewModel.resetRegisterResult() // Limpiar para que el mensaje no se repita
             }
             is RequestResult.Failure -> {
                 snackbarHostState.showSnackbar(result.errorMessage)
-                viewModel.resetRegistrationResult()
+                viewModel.resetRegisterResult() // Limpiar para que el mensaje no se repita
             }
+            // Mientras carga, o si aún no se ha intentado el registro, no hay nada que mostrar
             is RequestResult.Loading, null -> {}
         }
     }
@@ -74,7 +74,7 @@ fun RegisterScreen(
     Scaffold(
         snackbarHost = {
             SnackbarHost(snackbarHostState) { data ->
-                val isError = state.registrationResult is RequestResult.Failure
+                val isError = state.registerResult is RequestResult.Failure
                 Snackbar(
                     containerColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                     contentColor = Color.White
@@ -113,6 +113,8 @@ fun RegisterScreen(
                 value = state.city,
                 onValueChange = viewModel::onCityChange,
                 label = "Ciudad",
+                supportingText = state.cityError,
+                icon = Icons.Default.Home,
                 list = viewModel.cities,
             )
 
@@ -162,17 +164,16 @@ fun RegisterScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
-                onClick = viewModel::onRegisterClick,
-                enabled = state.isFormValid && state.registrationResult !is RequestResult.Loading,
+                onClick = viewModel::onRegisterClick, // Se avisa al ViewModel que el usuario quiere registrarse
+                // Se deshabilita mientras carga para evitar doble envío
+                enabled = state.isFormValid && state.registerResult !is RequestResult.Loading,
                 content = {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Icono del boton de registro"
                     )
-                    Spacer(
-                        modifier = Modifier.padding(horizontal = 5.dp)
-                    )
-                    if (state.registrationResult is RequestResult.Loading) {
+                    Spacer(modifier = Modifier.width(width = 5.dp))
+                    if (state.registerResult is RequestResult.Loading) {
                         Text(text = "Registrando...")
                     } else {
                         Text(text = "Registrarse")
@@ -187,10 +188,11 @@ fun RegisterScreen(
             title = "¿Está seguro de salir?",
             message = "Si sale ahora, se perderán los datos que ha ingresado.",
             onConfirm = {
-                viewModel.resetForm()
-                onNavigateToBack()
+                viewModel.onConfirmExit() // Limpiar el formulario y ocultar el diálogo
+                onNavigateToBack() // Navegar hacia atrás
             },
-            onDismiss = viewModel::onDismissExitDialog
+            onDismiss = viewModel::onDismissExitDialog,
+            confirmText = "Salir"
         )
     }
 

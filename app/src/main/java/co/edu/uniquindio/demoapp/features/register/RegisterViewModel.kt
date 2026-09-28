@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.milliseconds
 
+// Todo el estado de la pantalla en un solo objeto inmutable
 data class RegisterUiState(
     val name: String = "",
     val city: String = "",
@@ -25,10 +25,11 @@ data class RegisterUiState(
     val emailError: String? = null,
     val passwordError: String? = null,
     val confirmPasswordError: String? = null,
-    val showConfirmDialog: Boolean = false,
-    var showExitDialog: Boolean = false,
-    val registrationResult: RequestResult? = null
+    val showConfirmDialog: Boolean = false, // Indica si el diálogo de confirmación de envío está visible
+    val showExitDialog: Boolean = false, // Indica si el diálogo de confirmación de salida está visible
+    val registerResult: RequestResult? = null // Estado del intento de registro
 ) {
+    // Propiedad calculada: la pantalla no tiene que repetir esta lógica
     val isFormValid: Boolean
         get() = name.isNotBlank() &&
                 city.isNotBlank() &&
@@ -46,6 +47,7 @@ data class RegisterUiState(
 
 class RegisterViewModel : ViewModel() {
 
+    // Un único flujo con el estado completo de la pantalla
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
 
@@ -56,7 +58,7 @@ class RegisterViewModel : ViewModel() {
         _uiState.update { state ->
             state.copy(
                 name = newName,
-                nameError = if (newName.isBlank()) "El nombre es obligatorio" else if (newName.length < 3) "El nombre debe tener al menos 3 caracteres" else null
+                nameError = validateName(newName)
             )
         }
     }
@@ -65,7 +67,7 @@ class RegisterViewModel : ViewModel() {
         _uiState.update { state ->
             state.copy(
                 city = newCity,
-                cityError = if (newCity.isBlank()) "La ciudad es obligatoria" else null
+                cityError = validateCity(newCity)
             )
         }
     }
@@ -74,7 +76,7 @@ class RegisterViewModel : ViewModel() {
         _uiState.update { state ->
             state.copy(
                 address = newAddress,
-                addressError = if (newAddress.isBlank()) "La dirección es obligatoria" else null
+                addressError = validateAddress(newAddress)
             )
         }
     }
@@ -88,13 +90,15 @@ class RegisterViewModel : ViewModel() {
         }
     }
 
+    // La confirmación depende de dos campos: al cambiar la contraseña también se recalcula su error
     fun onPasswordChange(newPassword: String) {
         _uiState.update { state ->
-            val passwordError = validatePassword(newPassword)
             state.copy(
                 password = newPassword,
-                passwordError = passwordError,
-                confirmPasswordError = if (newPassword != state.confirmPassword) "Las contraseñas no coinciden" else null
+                passwordError = validatePassword(newPassword),
+                // Solo se valida la confirmación si el usuario ya escribió algo en ella
+                confirmPasswordError = if (state.confirmPassword.isEmpty()) state.confirmPasswordError
+                else validateConfirmPassword(newPassword, state.confirmPassword)
             )
         }
     }
@@ -103,9 +107,82 @@ class RegisterViewModel : ViewModel() {
         _uiState.update { state ->
             state.copy(
                 confirmPassword = newConfirmPassword,
-                confirmPasswordError = if (newConfirmPassword != state.password) "Las contraseñas no coinciden" else null
+                confirmPasswordError = validateConfirmPassword(state.password, newConfirmPassword)
             )
         }
+    }
+
+    // El usuario presionó el botón de registro
+    fun onRegisterClick() {
+        // Si el formulario no es válido, no se muestra el diálogo
+        if (!_uiState.value.isFormValid) return
+        _uiState.update { it.copy(showConfirmDialog = true) }
+    }
+
+    // El usuario confirmó en el diálogo
+    fun onConfirmRegister() {
+        _uiState.update { it.copy(showConfirmDialog = false) }
+        register()
+    }
+
+    // El usuario canceló o cerró el diálogo
+    fun onDismissConfirmDialog() {
+        _uiState.update { it.copy(showConfirmDialog = false) }
+    }
+
+    // El usuario presionó el botón "atrás" del dispositivo
+    fun onBackClick() {
+        _uiState.update { it.copy(showExitDialog = true) }
+    }
+
+    // El usuario confirmó que quiere salir del formulario
+    fun onConfirmExit() {
+        // Se reinicia el estado: se borran los campos y se oculta el diálogo
+        _uiState.value = RegisterUiState()
+    }
+
+    // El usuario canceló o cerró el diálogo de salida
+    fun onDismissExitDialog() {
+        _uiState.update { it.copy(showExitDialog = false) }
+    }
+
+    private fun register() {
+
+        // Si el formulario no es válido, no se hace nada
+        if (!_uiState.value.isFormValid) return
+
+        // viewModelScope es una corrutina atada al ciclo de vida del ViewModel
+        viewModelScope.launch {
+
+            // La solicitud pasa al estado de carga
+            _uiState.update { it.copy(registerResult = RequestResult.Loading) }
+
+            delay(2000) // Simula el tiempo que tardaría una consulta real
+
+            // Se publica el resultado final de la solicitud (simulación de registro exitoso)
+            _uiState.update { it.copy(registerResult = RequestResult.Success("Registro exitoso")) }
+        }
+    }
+
+    // Permite limpiar el resultado después de mostrarlo en pantalla
+    fun resetRegisterResult() {
+        _uiState.update { it.copy(registerResult = null) }
+    }
+
+    private fun validateName(name: String): String? {
+        return when {
+            name.isBlank() -> "El nombre es obligatorio"
+            name.length < 3 -> "El nombre debe tener al menos 3 caracteres"
+            else -> null
+        }
+    }
+
+    private fun validateCity(city: String): String? {
+        return if (city.isBlank()) "Selecciona una ciudad" else null
+    }
+
+    private fun validateAddress(address: String): String? {
+        return if (address.isBlank()) "La dirección es obligatoria" else null
     }
 
     private fun validateEmail(email: String): String? {
@@ -125,50 +202,11 @@ class RegisterViewModel : ViewModel() {
         }
     }
 
-    fun resetRegistrationResult() {
-        _uiState.update { it.copy(registrationResult = null) }
-    }
-
-    fun resetForm() {
-        _uiState.value = RegisterUiState()
-    }
-
-    // El usuario presionó el botón de registro
-    fun onRegisterClick() {
-        // Si el formulario no es válido, no se muestra el diálogo
-        if (!_uiState.value.isFormValid) return
-        _uiState.update { it.copy(showConfirmDialog = true) }
-    }
-
-    // El usuario confirmó en el diálogo
-    fun onConfirmRegister() {
-        _uiState.update { it.copy(showConfirmDialog = false) }
-        register() // Función creada en la actividad práctica de la guía anterior
-    }
-
-    // El usuario canceló o cerró el diálogo
-    fun onDismissConfirmDialog() {
-        _uiState.update { it.copy(showConfirmDialog = false) }
-    }
-
-    fun onDismissExitDialog() {
-        _uiState.update { it.copy(showExitDialog = false) }
-    }
-
-    fun onExitClick() {
-        _uiState.update { it.copy(showExitDialog = true) }
-    }
-
-    fun register() {
-        if (!_uiState.value.isFormValid) return
-
-        viewModelScope.launch {
-            _uiState.update { it.copy(registrationResult = RequestResult.Loading) }
-
-            delay(2000.milliseconds)
-
-            // Simulación de registro exitoso
-            _uiState.update { it.copy(registrationResult = RequestResult.Success("Registro exitoso")) }
+    private fun validateConfirmPassword(password: String, confirmPassword: String): String? {
+        return when {
+            confirmPassword.isBlank() -> "Confirma tu contraseña"
+            confirmPassword != password -> "Las contraseñas no coinciden"
+            else -> null
         }
     }
 }

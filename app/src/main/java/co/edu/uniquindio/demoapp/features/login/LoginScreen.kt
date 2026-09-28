@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -32,10 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.uniquindio.demoapp.core.util.RequestResult
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onNavigateToReports: () -> Unit,
+    onNavigateToReports: () -> Unit, // Función para navegar a la pantalla de la lista de reportes
     viewModel: LoginViewModel = viewModel()
 ) {
 
@@ -52,7 +49,8 @@ fun LoginScreen(
                 // showSnackbar suspende mientras el mensaje está visible en pantalla
                 snackbarHostState.showSnackbar(result.message)
                 viewModel.resetLoginResult() // Limpiar para que el mensaje no se repita
-                onNavigateToReports()
+                viewModel.resetForm() // Borrar todos los campos del formulario
+                onNavigateToReports() // Navegar a la pantalla de la lista de reportes
             }
 
             is RequestResult.Failure -> {
@@ -126,6 +124,7 @@ fun LoginScreen(
                 onClick = {
                     viewModel.login()
                 },
+                // Se deshabilita mientras carga para evitar doble envío
                 enabled = state.isFormValid && state.loginResult !is RequestResult.Loading,
                 content = {
                     if (state.loginResult is RequestResult.Loading) {

@@ -1,4 +1,4 @@
-package co.edu.uniquindio.demoapp.core.navigation
+package co.edu.uniquindio.demoapp.navigation
 
 import kotlinx.serialization.Serializable
 
@@ -17,6 +17,6 @@ sealed class MainRoutes {
     data object ReportList : MainRoutes()
 
     @Serializable
-    data class ReportDetail(val idReport: String) : MainRoutes()
+    data class ReportDetail(val reportId: String) : MainRoutes() // Recibe el ID del reporte como parámetro
 
 }

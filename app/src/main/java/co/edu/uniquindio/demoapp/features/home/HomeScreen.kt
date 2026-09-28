@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import co.edu.uniquindio.demoapp.R
 import coil3.compose.AsyncImage
@@ -21,8 +20,8 @@ import coil3.request.error
 
 @Composable
 fun HomeScreen(
-    onNavigateToLogin: () -> Unit,
-    onNavigateToRegister: () -> Unit
+    onNavigateToLogin: () -> Unit, // Función para navegar a la pantalla de Login
+    onNavigateToRegister: () -> Unit // Función para navegar a la pantalla de Registro
 ){
     Column(
         modifier = Modifier.fillMaxSize(), // Ocupa todo el espacio disponible
@@ -45,16 +44,12 @@ fun HomeScreen(
             verticalAlignment = Alignment.CenterVertically // Centrado vertical
         ) {
             Button(
-                onClick = {
-                    onNavigateToLogin()
-                }
+                onClick = onNavigateToLogin // Se indica qué hacer al presionar el botón, pero la lógica no se implementa aquí
             ) {
                 Text(text = "Iniciar sesión")
             }
             Button(
-                onClick = {
-                    onNavigateToRegister()
-                }
+                onClick = onNavigateToRegister // Se indica qué hacer al presionar el botón, pero la lógica no se implementa aquí
             ) {
                 Text(text = "Crear una cuenta")
             }
