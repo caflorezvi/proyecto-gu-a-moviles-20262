@@ -42,7 +42,12 @@ fun AppNavigation() {
             composable<MainRoutes.Login> {
                 LoginScreen(
                     onNavigateToReports = {
-                        navController.navigate(MainRoutes.ReportList)
+                        navController.navigate(MainRoutes.ReportList){
+                            // Elimina las pantallas de Login y Home del back stack para que el usuario no pueda regresar a ellas con el botón de retroceso
+                            popUpTo(MainRoutes.Home) {
+                                inclusive = true
+                            }
+                        }
                     }
                 )
             }
