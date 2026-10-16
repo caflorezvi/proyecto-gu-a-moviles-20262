@@ -1,22 +1,21 @@
 package co.edu.uniquindio.demoapp.features.home
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import co.edu.uniquindio.demoapp.R
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
-import coil3.request.error
+import co.edu.uniquindio.demoapp.core.component.AppHeader
 
 @Composable
 fun HomeScreen(
@@ -24,34 +23,37 @@ fun HomeScreen(
     onNavigateToRegister: () -> Unit // Función para navegar a la pantalla de Registro
 ){
     Column(
-        modifier = Modifier.fillMaxSize(), // Ocupa todo el espacio disponible
-        verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically), // Espacio entre elementos y centrado vertical
+        modifier = Modifier
+            .fillMaxSize() // Ocupa todo el espacio disponible
+            .safeDrawingPadding() // Evita que el contenido quede debajo de las barras del sistema
+            .padding(horizontal = 24.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally // Centrado horizontal
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRk1gcO1PFMqXWJZKzLXI14go6SEAABoW27J90jzTcQSomity3YRgjYHA4&s=10") // URL de la imagen
-                .crossfade(true) // Efecto de desvanecimiento al cargar
-                .error(R.drawable.avatar) // Imagen de error
-                .build(),
-            contentDescription = "Welcome Image"
-        )
-        Text(
-            text = "Pantalla de bienvenida"
-        )
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterHorizontally), // Espacio entre botones y centrado horizontal
-            verticalAlignment = Alignment.CenterVertically // Centrado vertical
+        // Los Spacer con weight centran el encabezado y dejan los botones en la parte inferior
+        Spacer(modifier = Modifier.weight(1f))
+
+        AppHeader()
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp) // Espacio entre botones
         ) {
             Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
                 onClick = onNavigateToLogin // Se indica qué hacer al presionar el botón, pero la lógica no se implementa aquí
             ) {
                 Text(text = "Iniciar sesión")
             }
-            Button(
+            OutlinedButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
                 onClick = onNavigateToRegister // Se indica qué hacer al presionar el botón, pero la lógica no se implementa aquí
             ) {
-                Text(text = "Crear una cuenta")
+                Text(text = "Crear cuenta")
             }
         }
 

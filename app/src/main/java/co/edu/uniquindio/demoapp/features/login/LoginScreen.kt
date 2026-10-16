@@ -4,8 +4,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -21,19 +24,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import co.edu.uniquindio.demoapp.core.component.AppHeader
+import co.edu.uniquindio.demoapp.core.component.AuthTabs
+import co.edu.uniquindio.demoapp.core.component.PasswordTextField
 import co.edu.uniquindio.demoapp.core.util.RequestResult
 
 @Composable
 fun LoginScreen(
-    onNavigateToReports: () -> Unit, // Función para navegar a la pantalla de la lista de reportes
-    viewModel: LoginViewModel = viewModel()
+    onNavigateToRegister: () -> Unit = {}, // Función para navegar a la pantalla de Registro
+    viewModel: LoginViewModel = hiltViewModel()
 ) {
 
     // Estado para gestionar los snackbars
@@ -50,7 +54,6 @@ fun LoginScreen(
                 snackbarHostState.showSnackbar(result.message)
                 viewModel.resetLoginResult() // Limpiar para que el mensaje no se repita
                 viewModel.resetForm() // Borrar todos los campos del formulario
-                onNavigateToReports() // Navegar a la pantalla de la lista de reportes
             }
 
             is RequestResult.Failure -> {
@@ -86,41 +89,46 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues) // Aplicar los padding del Scaffold
-                .padding(horizontal = 30.dp), // Padding horizontal adicional
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 32.dp), // Padding adicional
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(space = 16.dp, alignment = CenterVertically)
+            verticalArrangement = Arrangement.spacedBy(space = 20.dp)
         ) {
+            AppHeader(
+                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+            )
+
+            AuthTabs(
+                isLogin = true,
+                onNavigateToLogin = {},
+                onNavigateToRegister = onNavigateToRegister
+            )
+
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = state.email,
                 onValueChange = viewModel::onEmailChange,
                 label = {
-                    Text(text = "Email")
+                    Text(text = "Correo electrónico")
                 },
                 isError = state.emailError != null,
                 supportingText = state.emailError?.let { error ->
                     { Text(text = error) }
                 },
+                singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+            PasswordTextField(
                 value = state.password,
                 onValueChange = viewModel::onPasswordChange,
-                visualTransformation = PasswordVisualTransformation(),
-                label = {
-                    Text(text = "Password")
-                },
-                isError = state.passwordError != null,
-                supportingText = state.passwordError?.let { error ->
-                    { Text(text = error) }
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                label = "Contraseña",
+                error = state.passwordError
             )
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                    .padding(top = 8.dp)
+                    .height(48.dp),
                 onClick = {
                     viewModel.login()
                 },
@@ -128,9 +136,9 @@ fun LoginScreen(
                 enabled = state.isFormValid && state.loginResult !is RequestResult.Loading,
                 content = {
                     if (state.loginResult is RequestResult.Loading) {
-                        Text(text = "Iniciando sesión...")
+                        Text(text = "Entrando...")
                     } else {
-                        Text(text = "Iniciar Sesión")
+                        Text(text = "Entrar")
                     }
                 }
             )

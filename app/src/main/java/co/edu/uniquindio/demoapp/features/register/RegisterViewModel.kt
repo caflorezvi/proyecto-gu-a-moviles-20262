@@ -4,12 +4,17 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.uniquindio.demoapp.core.util.RequestResult
+import co.edu.uniquindio.demoapp.domain.model.User
+import co.edu.uniquindio.demoapp.domain.usecase.user.RegisterUserUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import jakarta.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 // Todo el estado de la pantalla en un solo objeto inmutable
 data class RegisterUiState(
@@ -45,7 +50,10 @@ data class RegisterUiState(
                 confirmPasswordError == null
 }
 
-class RegisterViewModel : ViewModel() {
+@HiltViewModel
+class RegisterViewModel @Inject constructor(
+    private val registerUserUseCase: RegisterUserUseCase
+) : ViewModel() {
 
     // Un único flujo con el estado completo de la pantalla
     private val _uiState = MutableStateFlow(RegisterUiState())
@@ -146,21 +154,37 @@ class RegisterViewModel : ViewModel() {
         _uiState.update { it.copy(showExitDialog = false) }
     }
 
-    private fun register() {
+    fun register() {
 
-        // Si el formulario no es válido, no se hace nada
-        if (!_uiState.value.isFormValid) return
+        val currentState = _uiState.value
+        if (!currentState.isFormValid) return
 
-        // viewModelScope es una corrutina atada al ciclo de vida del ViewModel
+        // El caso de uso es suspend, por eso lo invocamos dentro de viewModelScope
         viewModelScope.launch {
 
-            // La solicitud pasa al estado de carga
             _uiState.update { it.copy(registerResult = RequestResult.Loading) }
 
-            delay(2000) // Simula el tiempo que tardaría una consulta real
+            val newUser = User(
+                id = UUID.randomUUID().toString(), // Genera un ID único para el nuevo usuario
+                name = currentState.name,
+                city = currentState.city,
+                address = currentState.address,
+                email = currentState.email,
+                password = currentState.password,
+                profilePictureUrl = "https://picsum.photos/200?random=1"
+            )
 
-            // Se publica el resultado final de la solicitud (simulación de registro exitoso)
-            _uiState.update { it.copy(registerResult = RequestResult.Success("Registro exitoso")) }
+            try {
+                registerUserUseCase(newUser)
+                _uiState.update {
+                    it.copy(registerResult = RequestResult.Success("Registro exitoso"))
+                }
+            }catch (e: Exception){
+                _uiState.update {
+                    it.copy(registerResult = RequestResult.Failure(e.message.toString()))
+                }
+            }
+
         }
     }
 

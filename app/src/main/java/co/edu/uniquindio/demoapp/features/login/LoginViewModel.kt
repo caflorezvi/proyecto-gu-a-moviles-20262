@@ -4,7 +4,9 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.uniquindio.demoapp.core.util.RequestResult
-import kotlinx.coroutines.delay
+import co.edu.uniquindio.demoapp.domain.usecase.auth.LoginUserUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +27,10 @@ data class LoginUiState(
                 passwordError == null
 }
 
-class LoginViewModel : ViewModel() {
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val loginUserUseCase: LoginUserUseCase
+) : ViewModel() {
 
     // Un único flujo con el estado completo de la pantalla
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -73,26 +78,28 @@ class LoginViewModel : ViewModel() {
 
     fun login() {
 
-        // Si el formulario no es válido, no se hace nada
-        if (!_uiState.value.isFormValid) return
+        val currentState = _uiState.value
+        if (!currentState.isFormValid) return
 
-        // viewModelScope es una corrutina atada al ciclo de vida del ViewModel
+        // El caso de uso es suspend, por eso lo invocamos dentro de viewModelScope
         viewModelScope.launch {
 
             // La solicitud pasa al estado de carga
             _uiState.update { it.copy(loginResult = RequestResult.Loading) }
 
-            delay(1500) // Simula el tiempo que tardaría una consulta real
+            // Se invoca el caso de uso de login
+            val user = loginUserUseCase(currentState.email, currentState.password)
 
-            val state = _uiState.value
-            val result = if (state.email == "carlos@email.com" && state.password == "123456") {
-                RequestResult.Success("Login exitoso")
-            } else {
-                RequestResult.Failure("Credenciales inválidas")
+            // Actualizamos el estado con el resultado del login
+            _uiState.update {
+                it.copy(
+                    loginResult = if (user != null) {
+                        RequestResult.Success("Login exitoso")
+                    } else {
+                        RequestResult.Failure("Credenciales inválidas")
+                    }
+                )
             }
-
-            // Se publica el resultado final de la solicitud
-            _uiState.update { it.copy(loginResult = result) }
         }
     }
 

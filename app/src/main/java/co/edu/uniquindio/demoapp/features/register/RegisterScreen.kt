@@ -3,19 +3,16 @@ package co.edu.uniquindio.demoapp.features.register
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -32,17 +29,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import co.edu.uniquindio.demoapp.core.component.AppHeader
+import co.edu.uniquindio.demoapp.core.component.AuthTabs
 import co.edu.uniquindio.demoapp.core.component.ConfirmAlertDialog
+import co.edu.uniquindio.demoapp.core.component.PasswordTextField
 import co.edu.uniquindio.demoapp.core.component.DropdownMenu
 import co.edu.uniquindio.demoapp.core.util.RequestResult
 
 @Composable
 fun RegisterScreen(
     onNavigateToBack: () -> Unit, // Función para navegar hacia atrás
-    viewModel: RegisterViewModel = viewModel()
+    onNavigateToLogin: () -> Unit = {}, // Función para navegar a la pantalla de Login
+    viewModel: RegisterViewModel = hiltViewModel()
 ) {
     // Estado para gestionar los snackbars
     val snackbarHostState = remember { SnackbarHostState() }
@@ -88,15 +88,19 @@ fun RegisterScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 30.dp)
-                .verticalScroll(scrollState),
+                .verticalScroll(scrollState)
+                .padding(horizontal = 24.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(space = 16.dp)
+            verticalArrangement = Arrangement.spacedBy(space = 20.dp)
         ) {
-            Text(
-                text = "Crear Cuenta",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(vertical = 24.dp)
+            AppHeader(
+                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+            )
+
+            AuthTabs(
+                isLogin = false,
+                onNavigateToLogin = onNavigateToLogin,
+                onNavigateToRegister = {}
             )
 
             OutlinedTextField(
@@ -132,51 +136,40 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth(),
                 value = state.email,
                 onValueChange = viewModel::onEmailChange,
-                label = { Text(text = "Email") },
+                label = { Text(text = "Correo electrónico") },
                 isError = state.emailError != null,
                 supportingText = state.emailError?.let { { Text(text = it) } },
+                singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
 
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+            PasswordTextField(
                 value = state.password,
                 onValueChange = viewModel::onPasswordChange,
-                visualTransformation = PasswordVisualTransformation(),
-                label = { Text(text = "Contraseña") },
-                isError = state.passwordError != null,
-                supportingText = state.passwordError?.let { { Text(text = it) } },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                label = "Contraseña",
+                error = state.passwordError
             )
 
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+            PasswordTextField(
                 value = state.confirmPassword,
                 onValueChange = viewModel::onConfirmPasswordChange,
-                visualTransformation = PasswordVisualTransformation(),
-                label = { Text(text = "Confirmar Contraseña") },
-                isError = state.confirmPasswordError != null,
-                supportingText = state.confirmPasswordError?.let { { Text(text = it) } },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                label = "Confirmar contraseña",
+                error = state.confirmPasswordError
             )
 
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                    .padding(top = 8.dp)
+                    .height(48.dp),
                 onClick = viewModel::onRegisterClick, // Se avisa al ViewModel que el usuario quiere registrarse
                 // Se deshabilita mientras carga para evitar doble envío
                 enabled = state.isFormValid && state.registerResult !is RequestResult.Loading,
                 content = {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Icono del boton de registro"
-                    )
-                    Spacer(modifier = Modifier.width(width = 5.dp))
                     if (state.registerResult is RequestResult.Loading) {
-                        Text(text = "Registrando...")
+                        Text(text = "Creando cuenta...")
                     } else {
-                        Text(text = "Registrarse")
+                        Text(text = "Crear cuenta")
                     }
                 }
             )
